@@ -15,19 +15,19 @@
 
     public static class Program
     {
-        private static List<List<string>> languagesToSearch = new List<List<string>>
+        private static IEnumerable<Technology> technologies = new List<Technology>
         {
-            new List<string> {"C#", "C#", "ASP.NET", "WPF", "WCF", "WinForms", ".NET"},
-            new List<string> {"Ruby", "Ruby"},
-            new List<string> {"Python", "Python", "Django"},
-            new List<string> {"C/C++", "C++", "C/C++"},
-            new List<string> {"JavaScript", "JavaScript", "Angular"},
-            new List<string> {"Delphi", "Delphi"},
-            new List<string> {"Java", "Java", "JSP", "JEE"},
-            new List<string> {"Objective-C", "Objective-C", "Objective C", "ObjectiveC"},
-            new List<string> {"PHP", "PHP", "Zend Framework"},
-            new List<string> {"VisualBasic", "VisualBasic", "VB.NET"},
-            new List<string> {"SQL", "SQL", "MSSQL", "MySQL"},
+            new Technology("C#", new List<string> { "C#", "ASP.NET", "WPF", "WCF", "WinForms", ".NET"}),
+            new Technology("Ruby", new List<string> { "Ruby"}),
+            new Technology("Python", new List<string> { "Python", "Python", "Django"}),
+            new Technology("C/C++", new List<string> { "C++", "C/C++"}),
+            new Technology("JavaScript", new List<string> { "JavaScript", "Angular"}),
+            new Technology("Delphi", new List<string> { "Delphi"}),
+            new Technology("Java", new List<string> { "Java", "JSP", "JEE"}),
+            new Technology("Objective-C", new List<string> { "Objective-C", "Objective C", "ObjectiveC"}),
+            new Technology("PHP", new List<string> { "PHP", "Zend Framework"}),
+            new Technology("VisualBasic", new List<string> { "VisualBasic", "VB.NET"}),
+            new Technology("SQL", new List<string> { "SQL", "MSSQL", "MySQL"}),
         };
 
         public static void Main(string[] args)
@@ -80,14 +80,14 @@
             // Console.WriteLine(jobDescription);
             var languages = new List<string>();
 
-            foreach (var lang in languagesToSearch)
+            foreach (var technology in technologies)
             {
-                for (int i = 1; i < lang.Count; i++)
+                foreach (var term in technology.SearchTerms)
                 {
-                    var pattern = @"\W" + Regex.Escape(lang[i]) + @"\W";
+                    var pattern = @"\W" + Regex.Escape(term) + @"\W";
                     if (Regex.IsMatch(jobDescription, pattern, RegexOptions.IgnoreCase))
                     {
-                        languages.Add(lang[0]);
+                        languages.Add(technology.Name);
                         break;
                     }
                 }
