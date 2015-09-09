@@ -21,21 +21,21 @@
             var links = GetJobLinks().ToList();
             Console.WriteLine("{0} job ads found.", links.Count);
 
-            var languages = new Dictionary<string, int>();
+            var technologiesList = new Dictionary<string, int>();
 
             Parallel.ForEach(links, link =>
             {
-                var languagesInLink = ParseLanguages(link);
-                foreach (var item in languagesInLink)
+                var technologiesInLink = ParseTechnologies(link);
+                foreach (var item in technologiesInLink)
                 {
-                    lock (languages)
+                    lock (technologiesList)
                     {
-                        if (!languages.ContainsKey(item))
+                        if (!technologiesList.ContainsKey(item))
                         {
-                            languages.Add(item, 0);
+                            technologiesList.Add(item, 0);
                         }
 
-                        languages[item]++;
+                        technologiesList[item]++;
                     }
                 }
 
@@ -44,13 +44,13 @@
 
             Console.WriteLine();
             Console.WriteLine("Technology,Count");
-            foreach (var item in languages.OrderByDescending(x => x.Value))
+            foreach (var item in technologiesList.OrderByDescending(x => x.Value))
             {
                 Console.WriteLine($"{item.Key},{item.Value}");
             }
         }
 
-        private static IEnumerable<string> ParseLanguages(string link)
+        private static IEnumerable<string> ParseTechnologies(string link)
         {
             var webClient = new WebClient { Encoding = Encoding.UTF8 };
             var webPageContent = webClient.DownloadString(link);
@@ -59,7 +59,7 @@
             var jobDescription = " " + HttpUtility.HtmlDecode(dom["body > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > table"]
                 .Selection.First().InnerHTML.StripHtmlTags()) + " ";
 
-            var languages = new List<string>();
+            var technologies = new List<string>();
 
             foreach (var technology in new TechnologiesProvider().GetTechnologies())
             {
@@ -68,13 +68,13 @@
                     var pattern = @"\W" + Regex.Escape(term) + @"\W";
                     if (Regex.IsMatch(jobDescription, pattern, RegexOptions.IgnoreCase))
                     {
-                        languages.Add(technology.Name);
+                        technologies.Add(technology.Name);
                         break;
                     }
                 }
             }
 
-            return languages.Distinct();
+            return technologies.Distinct();
         }
 
         private static IEnumerable<string> GetJobLinks()
@@ -84,7 +84,7 @@
             const int ItemsPerPage = 15;
 
             var list = new List<string>();
-            int startFrom = 0;
+            var startFrom = 0;
             while (true)
             {
                 var webPageContent = webClient.DownloadString(string.Format(PageableListUrlFormat, startFrom));
