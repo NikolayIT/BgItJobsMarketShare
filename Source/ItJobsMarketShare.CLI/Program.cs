@@ -44,7 +44,7 @@
 
             Console.WriteLine();
             Console.WriteLine("Technology,Count");
-            foreach (var item in languages.OrderBy(x => x.Value))
+            foreach (var item in languages.OrderByDescending(x => x.Value))
             {
                 Console.WriteLine($"{item.Key},{item.Value}");
             }
