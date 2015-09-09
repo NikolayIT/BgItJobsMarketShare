@@ -25,7 +25,6 @@
 
             Parallel.ForEach(links, link =>
             {
-                // Console.WriteLine(link);
                 var languagesInLink = ParseLanguages(link);
                 foreach (var item in languagesInLink)
                 {
@@ -38,20 +37,17 @@
 
                         languages[item]++;
                     }
-
-                    // Console.WriteLine(item);
                 }
 
                 Console.Write(".");
             });
 
             Console.WriteLine();
-            foreach (var item in languages)
+            Console.WriteLine("Technology,Count");
+            foreach (var item in languages.OrderBy(x => x.Value))
             {
-                Console.WriteLine("{0} => {1}", item.Key, item.Value);
+                Console.WriteLine($"{item.Key},{item.Value}");
             }
-
-            Console.ReadLine();
         }
 
         private static IEnumerable<string> ParseLanguages(string link)
@@ -63,7 +59,6 @@
             var jobDescription = " " + HttpUtility.HtmlDecode(dom["body > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > table"]
                 .Selection.First().InnerHTML.StripHtmlTags()) + " ";
 
-            // Console.WriteLine(jobDescription);
             var languages = new List<string>();
 
             foreach (var technology in new TechnologiesProvider().GetTechnologies())
