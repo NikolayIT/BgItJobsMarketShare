@@ -4,22 +4,22 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using System.Web;
 
     using CsQuery;
 
     using MissingFeatures;
-    using System.Web;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
 
     public static class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
             Console.OutputEncoding = Encoding.UTF8;
-            var links = GetJobLinks();
-            Console.WriteLine("{0} job ads found.", links.Count());
+            var links = GetJobLinks().ToList();
+            Console.WriteLine("{0} job ads found.", links.Count);
 
             var languages = new Dictionary<string, int>();
 
@@ -56,12 +56,13 @@
 
         private static IEnumerable<string> ParseLanguages(string link)
         {
-            WebClient webClient = new WebClient() { Encoding = Encoding.UTF8 };
+            var webClient = new WebClient { Encoding = Encoding.UTF8 };
             var webPageContent = webClient.DownloadString(link);
             CQ dom = webPageContent;
 
             var jobDescription = " " + HttpUtility.HtmlDecode(dom["body > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > table"]
                 .Selection.First().InnerHTML.StripHtmlTags()) + " ";
+
             // Console.WriteLine(jobDescription);
             var languages = new List<string>();
 
@@ -83,7 +84,7 @@
 
         private static IEnumerable<string> GetJobLinks()
         {
-            WebClient webClient = new WebClient() { Encoding = Encoding.UTF8 };
+            var webClient = new WebClient { Encoding = Encoding.UTF8 };
             const string PageableListUrlFormat = "http://www.jobs.bg/front_job_search.php?frompage={0}&all_cities=0&categories%5B%5D=15&all_type=0&all_position_level=1&all_company_type=1&keyword=#paging";
             const int ItemsPerPage = 15;
 
@@ -96,7 +97,7 @@
                 var links = dom["#search_results .joblink"]
                     .Selection
                     .Select(x => x.Attributes["href"])
-                    .Select(x => string.Format("http://www.jobs.bg/{0}", x))
+                    .Select(x => $"http://www.jobs.bg/{x}")
                     .ToList();
                 list.AddRange(links);
 
@@ -111,7 +112,7 @@
             }
 
             Console.WriteLine();
-            
+
             return list;
         }
     }
