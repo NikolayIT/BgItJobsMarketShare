@@ -1,5 +1,5 @@
 version: 1.0.{build}
 before_build:
-- nuget restore Source\Santase.sln
+- nuget restore Source\ItJobsMarketShare.sln
 build:
   verbosity: minimal
