@@ -10,8 +10,9 @@
         {
             Console.OutputEncoding = Encoding.UTF8;
 
-            var technologiesList =
-                new JobsBgTechnologiesCountProvider().GetCount(new TechnologiesProvider().GetTechnologies());
+            ITechnologiesProvider technologiesProvider = new CommonTechnologiesProvider();
+            var technologiesList = new JobsBgTechnologiesCountProvider().GetCount(
+                technologiesProvider.GetTechnologies());
 
             Console.WriteLine();
             Console.WriteLine("Technology,Count");

@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public class TechnologiesProvider
+    public class CommonTechnologiesProvider : ITechnologiesProvider
     {
         public IEnumerable<Technology> GetTechnologies()
         {
