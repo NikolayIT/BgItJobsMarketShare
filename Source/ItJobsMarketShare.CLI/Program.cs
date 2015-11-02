@@ -11,8 +11,8 @@
             Console.OutputEncoding = Encoding.UTF8;
 
             ITechnologiesProvider technologiesProvider = new CommonTechnologiesProvider();
-            var technologiesList = new JobsBgTechnologiesCountProvider().GetCount(
-                technologiesProvider.GetTechnologies());
+            ITechnologiesCountProvider technologiesCountProvider = new JobsBgTechnologiesCountProvider();
+            var technologiesList = technologiesCountProvider.GetCount(technologiesProvider.GetTechnologies());
 
             Console.WriteLine();
             Console.WriteLine("Technology,Count");
