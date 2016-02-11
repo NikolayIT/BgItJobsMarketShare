@@ -82,7 +82,7 @@
             {
                 var webPageContent = webClient.DownloadString(string.Format(PageableListUrlFormat, startFrom));
                 CQ dom = webPageContent;
-                var links = dom["#search_results .joblink"]
+                var links = dom["#search_results_div .joblink"]
                     .Selection
                     .Select(x => x.Attributes["href"])
                     .Select(x => $"http://www.jobs.bg/{x}")
