@@ -1,4 +1,4 @@
-﻿namespace ItJobsMarketShare.CLI
+﻿namespace ItJobsMarketShare
 {
     using System;
     using System.Collections.Generic;
@@ -10,49 +10,60 @@
     using System.Threading.Tasks;
     using System.Web;
 
-    using CsQuery;
+    using AngleSharp;
+    using AngleSharp.Html.Parser;
 
-    using MissingFeatures;
+    using Ganss.XSS;
 
-    public class JobsBgTechnologiesCountProvider : ITechnologiesCountProvider
+    public class JobsBgTechnologiesCountProvider
     {
+        private readonly IHtmlParser parser = new HtmlParser();
+        private readonly IHtmlSanitizer sanitizer = new HtmlSanitizer();
+
         public Dictionary<string, int> GetCount(IEnumerable<Technology> technologies)
         {
             var technologiesList = new Dictionary<string, int>();
             var links = this.GetJobLinks().ToList();
             Console.WriteLine("{0} job ads found.", links.Count);
 
-            Parallel.ForEach(links, link =>
-                {
-                    var technologiesInLink = this.ParseTechnologies(link, technologies);
-                    foreach (var item in technologiesInLink)
+            Parallel.ForEach(
+                links,
+                link =>
                     {
-                        lock (technologiesList)
+                        var technologiesInLink = this.ParseTechnologies(link, technologies);
+                        foreach (var item in technologiesInLink)
                         {
-                            if (!technologiesList.ContainsKey(item))
+                            lock (technologiesList)
                             {
-                                technologiesList.Add(item, 0);
+                                if (!technologiesList.ContainsKey(item))
+                                {
+                                    technologiesList.Add(item, 0);
+                                }
+
+                                technologiesList[item]++;
                             }
-
-                            technologiesList[item]++;
                         }
-                    }
 
-                    Thread.Sleep(10000);
-                    Console.Write(".");
-                });
+                        Thread.Sleep(10000);
+                        Console.Write(".");
+                    });
 
             return technologiesList;
         }
 
-        private IEnumerable<string> ParseTechnologies(string link, IEnumerable<Technology> technologies)
+        public IEnumerable<string> ParseTechnologies(string link, IEnumerable<Technology> technologies)
         {
             var webClient = new WebClient { Encoding = Encoding.UTF8 };
             var webPageContent = webClient.DownloadString(link);
-            CQ dom = webPageContent;
+            var document = this.parser.ParseDocument(webPageContent);
 
-            var jobDescription = " " + HttpUtility.HtmlDecode(dom["body > table:nth-child(3) > tbody > tr > td > table > tbody > tr > td:nth-child(1) > table"]
-                                           .Selection.First().InnerHTML.StripHtmlTags()) + " ";
+            var jobDescription = " " + Regex.Replace(
+                                     HttpUtility.HtmlDecode(
+                                         this.sanitizer.Sanitize(
+                                             document.QuerySelector("table[style*=\"width:980px\"]")?.ToHtml())
+                                         ?? string.Empty),
+                                     "<.*?>",
+                                     string.Empty) + " ";
 
             var technologiesFound = new List<string>();
 
@@ -60,7 +71,7 @@
             {
                 foreach (var term in technology.SearchTerms)
                 {
-                    var pattern = @"\W" + Regex.Escape(term) + @"\W";
+                    var pattern = $@"\W{Regex.Escape(term)}\W";
                     if (Regex.IsMatch(jobDescription, pattern, RegexOptions.IgnoreCase))
                     {
                         technologiesFound.Add(technology.Name);
@@ -83,12 +94,9 @@
             while (true)
             {
                 var webPageContent = webClient.DownloadString(string.Format(PageableListUrlFormat, startFrom));
-                CQ dom = webPageContent;
-                var links = dom["#search_results_div .joblink"]
-                    .Selection
-                    .Select(x => x.Attributes["href"])
-                    .Select(x => $"http://www.jobs.bg/{x}")
-                    .ToList();
+                var document = this.parser.ParseDocument(webPageContent);
+                var links = document.QuerySelectorAll("#search_results_div .joblink").Select(x => x.Attributes["href"].Value)
+                    .Select(x => $"http://www.jobs.bg/{x}").ToList();
                 list.AddRange(links);
 
                 startFrom += ItemsPerPage;

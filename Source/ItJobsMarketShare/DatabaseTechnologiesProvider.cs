@@ -1,4 +1,4 @@
-﻿namespace ItJobsMarketShare.CLI
+﻿namespace ItJobsMarketShare
 {
     using System.Collections.Generic;
 

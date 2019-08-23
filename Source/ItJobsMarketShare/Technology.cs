@@ -1,4 +1,4 @@
-﻿namespace ItJobsMarketShare.CLI
+﻿namespace ItJobsMarketShare
 {
     using System.Collections.Generic;
 
@@ -10,8 +10,8 @@
             this.SearchTerms = searchTerms;
         }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public IEnumerable<string> SearchTerms { get; private set; }
+        public IEnumerable<string> SearchTerms { get; }
     }
 }
